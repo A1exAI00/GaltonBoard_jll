@@ -8,6 +8,15 @@ include(srcdir("GaltonPlots.jl"))
 
 #########################################################################################
 
+SAVE_DATA = true
+DATA_SAVE_PREFIX = "03-one_particle_sim"
+DATA_SAVE_DIR = "sims03"
+
+SAVE_PLOT = false
+PLOT_SAVE_NAME = "03-one_particle-$(time_ns()).png"
+
+#########################################################################################
+
 W, H = 1.0, 2.0
 N, M = 7, 14
 R = H/M/3
@@ -21,8 +30,6 @@ Vx₀, Vy₀ = V*randn()/2, V*randn()/2
 
 t_min, t_max, N_t = 0.0, 100.0, 5_000
 
-PLOT_NAME = "03-OneParticle"
-
 #########################################################################################
 
 U₀ = [x₀, y₀, Vx₀, Vy₀]
@@ -35,10 +42,17 @@ integrate!(p, t_span, t_range)
 
 #########################################################################################
 
-fig = create_fig()
-ax = create_Galton_board_axis(b, "One particle Galton board", "x", "y")
-plot_Galton_board_bounds!(ax, b)
-plot_Galton_board_pins!(ax, b)
-plot_Galton_traj!(ax, p)
+if SAVE_DATA
+    saving_name = savename(DATA_SAVE_PREFIX, (g=g, R=R, γ=γ), "jld2")
+    safesave(datadir(DATA_SAVE_DIR, saving_name), Dict("p"=>p)) 
+end
 
-save(plotsdir()*"/"*PLOT_NAME*"$(time_ns()).png", fig, px_per_unit=2)
+if SAVE_PLOT
+    fig = create_fig()
+    ax = create_Galton_board_axis(b, "One particle Galton board", "x", "y")
+    plot_Galton_board_bounds!(ax, b)
+    plot_Galton_board_pins!(ax, b)
+    plot_Galton_traj!(ax, p)
+
+    save(plotsdir(PLOT_SAVE_NAME), fig, px_per_unit=2)
+end

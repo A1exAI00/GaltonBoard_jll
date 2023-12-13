@@ -8,6 +8,15 @@ include(srcdir("GaltonPlots.jl"))
 
 #########################################################################################
 
+SAVE_DATA = true
+DATA_SAVE_PREFIX = "04-many_particles_sim"
+DATA_SAVE_DIR = "sims04"
+
+SAVE_PLOT = false
+PLOT_SAVE_NAME = "04-ManyParticles$(time_ns()).png"
+
+#########################################################################################
+
 # Pin placement
 N, M = 45, 15
 W, H = 3.0, 1.0
@@ -21,12 +30,10 @@ V, Δx₀ = 0.1, 0.1
 t_min, t_max, N_t = 0.0, 100.0, 1_000
 
 # Number of particles
-N_sols = 100_000
-plot_every_particle = 200
+N_sols = 10_000
+plot_every_particle = 20
 
 N_bins = 300
-
-PLOT_NAME = "04-ManyParticles"
 
 #########################################################################################
 
@@ -57,15 +64,20 @@ x_end = [particles[i].sol[1,end] for i in 1:N_sols]
 
 #########################################################################################
 
-fig = create_fig((1000,700))
-ax1, ax2 = create_Galton_board_axis_and_hist(b, "Many particles Galton board", "x", "y", N_sols)
-plot_Galton_board_bounds!(ax1, b)
+if SAVE_DATA
+    saving_name = savename(DATA_SAVE_PREFIX, (g=g, R=R, γ=γ, N_sols=N_sols), "jld2")
+    safesave(datadir(DATA_SAVE_DIR, saving_name), Dict("ps"=>particles)) 
+end
 
-particles_to_plot = particles[(1:N_sols)[rem.(1:N_sols, plot_every_particle).==0]]
-plot_Galton_traj!.(ax1, particles_to_plot)
+if SAVE_PLOT
+    fig = create_fig((1000,700))
+    ax1, ax2 = create_Galton_board_axis_and_hist(b, "Many particles Galton board", "x", "y", N_sols)
+    plot_Galton_board_bounds!(ax1, b)
 
-plot_Galton_hist!(ax2, x_end, N_bins)
+    particles_to_plot = particles[(1:N_sols)[rem.(1:N_sols, plot_every_particle).==0]]
+    plot_Galton_traj!.(ax1, particles_to_plot)
+    plot_Galton_hist!(ax2, x_end, N_bins)
+    plot_Galton_board_pins!(ax1, b)
 
-plot_Galton_board_pins!(ax1, b)
-
-save(plotsdir()*"/"*PLOT_NAME*"$(time_ns()).png", fig, px_per_unit=2)
+    save(plotsdir(PLOT_SAVE_NAME), fig, px_per_unit=2)
+end

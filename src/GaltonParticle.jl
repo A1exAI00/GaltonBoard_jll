@@ -22,7 +22,7 @@ end
 
 function condition(out, u, t, int)
     x, y, Vx, Vy = u
-    g, γ, W, pins, hits_pin, hits_wall = int.p
+    g, γ, W, pins = int.p
 
     for i in eachindex(pins)
         x_pin, y_pin, R_pin = pins[i]
@@ -35,15 +35,13 @@ end
 
 function affect!(int, idx)
     x, y, Vx, Vy = int.u
-    g, γ, W, pins, hits_pin, hits_wall = int.p
+    g, γ, W, pins = int.p
 
     if (idx == 1) || (idx == 2) # collision with vertical walls
-        int.p[6] = hits_wall + 1
         int.u[3] *= -γ
     elseif idx == 3 # collision with bottom
         terminate!(int)
     else # collision with pins
-        int.p[5] = hits_pin + 1
         x_pin, y_pin, R_pin = pins[idx-3]
         Nx = (x-x_pin)/R_pin
         Ny = (y-y_pin)/R_pin
@@ -73,7 +71,7 @@ function integrate!(p::GaltonParticle, t_span, t_range)
     b = p.board
     cb = VectorContinuousCallback(condition, affect!, b.N_pins+3)
 
-    prob = ODEProblem(particle_DE, p.U₀, t_span, (p.g, p.γ, b.board_width, b.pins), 0, 0)
+    prob = ODEProblem(particle_DE, p.U₀, t_span, (p.g, p.γ, b.board_width, b.pins))
     sol = solve(prob; alg=Tsit5(), reltol=RELTOL, abstol=ABSTOL, 
         dt=DELTA_T, adaptive=false, callback=cb, saveat=t_range
     )

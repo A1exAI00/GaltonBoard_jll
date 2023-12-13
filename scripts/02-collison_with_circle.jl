@@ -1,10 +1,18 @@
 using DrWatson
-@quickactivate "Galton_board_Julia"
+@quickactivate "GaltonBoard_jll"
 
 include(srcdir("GaltonSystem.jl"))
 using .GaltonSystem
 
 include(srcdir("GaltonPlots.jl"))
+
+#########################################################################################
+
+SAVE_DATA = true
+DATA_SAVE_PREFIX = "02-collison_with_circle_sim"
+
+SAVE_PLOT = false
+PLOT_SAVE_NAME = "02-collison_with_circle$(time_ns()).png"
 
 #########################################################################################
 
@@ -29,8 +37,6 @@ Vx₀, Vy₀ = 0.0, 0.0
 # Integration time
 t_min, t_max, N_t = 0.0, 10.0, 100
 
-PLOT_NAME = "02-InPinBounce"
-
 #########################################################################################
 
 U₀ = [x₀, y₀, Vx₀, Vy₀]
@@ -47,10 +53,17 @@ integrate!(p, t_span, t_range)
 
 #########################################################################################
 
-fig = create_fig()
-ax = create_Galton_board_axis(b, "In pin Bounce", "x", "y")
-plot_Galton_board_bounds!(ax, b)
-plot_Galton_board_pins!(ax, b)
-plot_Galton_traj!(ax, p)
+if SAVE_DATA
+    saving_name = savename(DATA_SAVE_PREFIX, (g=g, R=R, γ=γ), "jld2")
+    safesave(datadir("sims02", saving_name), Dict("p"=>p)) 
+end
 
-save(plotsdir()*"/"*PLOT_NAME*"$(time_ns()).png", fig, px_per_unit=2)
+if SAVE_PLOT
+    fig = create_fig()
+    ax = create_Galton_board_axis(b, "Collison With Circle", "x", "y")
+    plot_Galton_board_bounds!(ax, b)
+    plot_Galton_board_pins!(ax, b)
+    plot_Galton_traj!(ax, p)
+
+    save(plotsdir(PLOT_SAVE_NAME), fig, px_per_unit=2)
+end

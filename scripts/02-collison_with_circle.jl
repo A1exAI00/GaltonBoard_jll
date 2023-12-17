@@ -8,11 +8,17 @@ include(srcdir("GaltonPlots.jl"))
 
 #########################################################################################
 
-SAVE_DATA = true
-DATA_SAVE_PREFIX = "02-collison_with_circle_sim"
+is_test_run = (length(ARGS) ≠ 0) && (ARGS[1] == "0")
 
-SAVE_PLOT = false
-PLOT_SAVE_NAME = "02-collison_with_circle$(time_ns()).png"
+#########################################################################################
+
+_SAVE_DATA = true
+SAVE_DATA = is_test_run ? true : _SAVE_DATA
+DATA_SAVE_PREFIX = is_test_run ? "TEST" : "02-collison_with_circle_sim"
+
+_SAVE_PLOT = false
+SAVE_PLOT = is_test_run ? true : _SAVE_PLOT
+PLOT_SAVE_NAME = is_test_run ? "TEST.png" : "02-collison_with_circle$(time_ns()).png"
 
 #########################################################################################
 

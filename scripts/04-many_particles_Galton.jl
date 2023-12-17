@@ -8,12 +8,21 @@ include(srcdir("GaltonPlots.jl"))
 
 #########################################################################################
 
-SAVE_DATA = true
-DATA_SAVE_PREFIX = "04-many_particles_sim"
+is_test_run = (length(ARGS) ≠ 0) && (ARGS[1] == "0")
+
+#########################################################################################
+
+_SAVE_DATA = true
+SAVE_DATA = is_test_run ? true : _SAVE_DATA
+DATA_SAVE_PREFIX = is_test_run ? "TEST" : "04-many_particles_sim"
 DATA_SAVE_DIR = "sims04"
 
-SAVE_PLOT = false
-PLOT_SAVE_NAME = "04-ManyParticles$(time_ns()).png"
+_SAVE_PLOT = false
+SAVE_PLOT = is_test_run ? true : _SAVE_PLOT
+PLOT_SAVE_NAME = is_test_run ? "TEST.png" : "04-ManyParticles$(time_ns()).png"
+
+_SHOW_PROGRESS = true
+SHOW_PROGRESS = is_test_run ? false : _SHOW_PROGRESS
 
 #########################################################################################
 
@@ -30,8 +39,8 @@ V, Δx₀ = 0.1, 0.1
 t_min, t_max, N_t = 0.0, 100.0, 1_000
 
 # Number of particles
-N_sols = 10_000
-plot_every_particle = 20
+N_sols = is_test_run ? 100 : 10_000
+plot_every_particle = is_test_run ? 1 : 20
 
 N_bins = 300
 
@@ -44,11 +53,15 @@ b = GaltonBoard(W, H, N, M, R)
 
 #########################################################################################
 
-println("Precompile started")
+SHOW_PROGRESS && println("Precompile started")
+ti = time()
+
 U₀_precompile = [0.0001, 0.0001, 0.0, 0.0]
 p_precompile =GaltonParticle(b, g, γ, U₀_precompile)
 integrate!(p_precompile, t_span, t_range)
-println("Precompile finished")
+
+ti = time() - ti
+SHOW_PROGRESS && println("Precompile finished, elapsed $(round(ti/60, digits=3)) minutes")
 
 #########################################################################################
 
@@ -56,7 +69,7 @@ generate_random_U₀() = [W/2 + Δx₀*randn(), H, V*randn(), V*randn()]
 
 particles = [GaltonParticle(b, g, γ, generate_random_U₀()) for i in 1:N_sols]
 for i in 1:N_sols
-    (rem(i, plot_every_particle) == 0) && (@show i)
+    (rem(i, plot_every_particle) == 0) && SHOW_PROGRESS && (@show i)
     integrate!(particles[i], t_span, t_range)
 end
 

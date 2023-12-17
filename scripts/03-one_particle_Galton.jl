@@ -8,12 +8,18 @@ include(srcdir("GaltonPlots.jl"))
 
 #########################################################################################
 
-SAVE_DATA = true
-DATA_SAVE_PREFIX = "03-one_particle_sim"
+is_test_run = (length(ARGS) ≠ 0) && (ARGS[1] == "0")
+
+#########################################################################################
+
+_SAVE_DATA = true
+SAVE_DATA = is_test_run ? true : _SAVE_DATA
+DATA_SAVE_PREFIX = is_test_run ? "TEST" : "03-one_particle_sim"
 DATA_SAVE_DIR = "sims03"
 
-SAVE_PLOT = false
-PLOT_SAVE_NAME = "03-one_particle-$(time_ns()).png"
+_SAVE_PLOT = false
+SAVE_PLOT = is_test_run ? true : _SAVE_DATA
+PLOT_SAVE_NAME = is_test_run ? "TEST.png" : "03-one_particle-$(time_ns()).png"
 
 #########################################################################################
 
